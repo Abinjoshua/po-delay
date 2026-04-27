@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
-from datetime import datetime
-
-from odoo import models
+from datetime import datetime, date
+from odoo import models, api
+from odoo.http import request
+from odoo.orm.fields_temporal import Date
 
 
 class PurchaseOrder(models.Model):
@@ -9,28 +10,24 @@ class PurchaseOrder(models.Model):
 
     def po_delay(self):
         po_delv = self.search([])
-        res_model_id = self.env['ir.model'].search([('name', '=', 'Purchase Order')])
-        # print(res_model_id.model)
-        print(self.env['ir.model']._get_id('res.partner'))
         for po in po_delv:
-            if po.date_order < datetime.now():
-                print(po.id)
-                activity = self.env['mail.activity'].create({
-                    'res_id': po.id,
-                    'res_model_id': self.env['ir.model']._get_id('res.partner'),
-                    'user_id': 2,
-                    'summary': 'Purchase Delay',
-                    'note': 'Delayed Purchase Order',
-                    'activity_type_id': 4,
-                    'date_deadline': datetime.today(),
-                })
-        print(activity)
-        # user_id = self.env['res.users'].search([]).mapped('id')
-        # print(user_id)
-        # print(self.env.user.id)
-        # res_model_id = self.env['mail.activity'].search([]).mapped('res_model_id')
-        # print(res_model_id)
-        # res_id = self.env['mail.activity'].search([]).mapped('res_model_id')
-        # print(res_id)
-        # res_model_id = self.env['ir.model'].search([]).mapped('name')
-        print(res_model_id)
+            po_delivery = po.picking_ids.filtered(
+                lambda x: x.state == 'assigned'
+            )
+            print(po_delivery)
+            if po_delivery:
+                if po_delivery.date_deadline.date() < date.today():
+                    self.env['mail.activity'].create({
+                        'res_model_id': self.env['ir.model']._get_id('purchase.order'),
+                        'res_id': po.id,
+                        'user_id': po.user_id.id,
+                        'summary': 'Purchase Delay Order3',
+                        'note': 'Delayed Purchase Order',
+                        'activity_type_id': 4,
+                        'date_deadline': datetime.today(),
+                    })
+                email_values = {'email_to': po.partner_id.email}
+                template = self.env.ref(
+                    'po_delay.email_template_po_delay')
+                template.send_mail(po.id, force_send=True, email_values=email_values)
+

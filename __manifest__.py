@@ -9,5 +9,6 @@
     'application': True,
     'depends': ['purchase'],
     'auto_install': True,
-    'data': ['data/ir_cron_create_invoice.xml']
+    'data': ['data/ir_cron_create_invoice.xml',
+             'data/mail_template_data.xml']
 }

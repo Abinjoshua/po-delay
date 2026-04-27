@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+   <record id="email_template_po_delay" model="mail.template">
+       <field name="name">Purchase Order Delay</field>
+       <field name="model_id" ref="po_delay.model_purchase_order"/>
+       <field name="subject">Purchase Order Delay</field>
+       <field name="email_from">{{ object.company_id.email}}</field>
+       <field name="email_to">{{object.partner_id.email}}</field>
+       <field name="body_html" type="html">
+               <p>Hi <t t-out="object.partner_id.name"/>,</p>
+               <p>This is a reminder to let you know that the product has not been received</p>
+               <p><strong>Kindly deliver as soon as possible.</strong></p>
+               <br/>
+               <p>Best regards,<br/>Cybrosys Team</p>
+       </field>
+   </record>
+</odoo>
